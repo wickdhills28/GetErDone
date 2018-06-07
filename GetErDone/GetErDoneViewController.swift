@@ -10,7 +10,7 @@ import UIKit
 
 class GetErDoneViewController: UITableViewController {
 
-    let itemArray = ["Wake Up", "Exercise","Shower", "Breakfast", "Chill + Music", "School Work", "Work", "Chillax"]
+    var itemArray = ["Wake Up", "Exercise","Shower", "Breakfast", "Chill + Music", "School Work", "Work", "Chillax"]
     
     
     override func viewDidLoad() {
@@ -60,9 +60,47 @@ class GetErDoneViewController: UITableViewController {
     
         
         tableView.deselectRow(at: indexPath, animated: true)    //Makes it so that the selected cell doesn't stay gray permanently
-         
         
     }
+    
+    //MARK - Add new items section
+    
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        //Alert will need an action added to it
+        var textField : UITextField = UITextField()
+        
+        
+        let alert = UIAlertController(title: "AddEr A New Item", message: "", preferredStyle: .alert)
+    
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            // What will happen when user clicks "Add Item" button on our UIAlert
+            print(textField.text!)
+            self.itemArray.append(textField.text!)       // Add to item array
+            
+            
+            // ---- IMPORTANT FOR UI
+            self.tableView.reloadData() //Updates tableview when new item has been added
+            
+        }
+        
+        alert.addTextField { (alertTextField) in
+            
+            alertTextField.placeholder = "Enter new item" //Placeholder for when the text field first shows, it will turn white when user clicks on it
+            
+            textField = alertTextField
+        }
+        
+        alert.addAction(action)
+        
+        // This method must be called to display the alert to the user
+        present(alert, animated: true, completion: nil)
+        
+    }
+    
+    
     
 }
     
