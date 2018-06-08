@@ -12,10 +12,19 @@ class GetErDoneViewController: UITableViewController {
 
     var itemArray = ["Wake Up", "Exercise","Shower", "Breakfast", "Chill + Music", "School Work", "Work", "Chillax"]
     
+    let defaults = UserDefaults.standard  //Create a UserDefaults object, interface to user's default's database, set as standard
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+                                                                //THIS IS HOW YOU PROPERLY CAST, USE 'as' KEYWORD!!!
+        if let items = defaults.array(forKey: "GetErDoneArray") as? [String]{
+                itemArray = items   // If the array exists in the defaults, set itemArray is the array
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -80,6 +89,8 @@ class GetErDoneViewController: UITableViewController {
             print(textField.text!)
             self.itemArray.append(textField.text!)       // Add to item array
             
+            // Save updated itemArray to our user defaults, then use it to load up table view when we start app again
+            self.defaults.set(self.itemArray, forKey: "GetErDoneArray")
             
             // ---- IMPORTANT FOR UI
             self.tableView.reloadData() //Updates tableview when new item has been added
