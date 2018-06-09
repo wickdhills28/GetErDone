@@ -14,6 +14,11 @@ class GetErDoneViewController: UITableViewController {
     
     let defaults = UserDefaults.standard  //Create a UserDefaults object, interface to user's default's database, set as standard
     
+    //REMINDER:  .default is a Singleton! This singleton contains a ton of URLs organized by directory and domain mask
+    // URLs lead to data stored
+    // .first because it is an array and we want to grab the first item
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+
     
     
     
@@ -21,10 +26,15 @@ class GetErDoneViewController: UITableViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-                                                                //THIS IS HOW YOU PROPERLY CAST, USE 'as' KEYWORD!!!
-        if let items = defaults.array(forKey: "GetErDoneArray") as? [Item]{
-                itemArray = items   // If an array exists in the user defaults, set itemArray to that array
-        }
+//        print(dataFilePath!)    //Prints out the file path to a plist that holds our NS user defaults
+        
+        loadItems() //Loads/decodes NSCoder data
+        
+        //====== USING USER DEFAULTS ======
+        //THIS IS HOW YOU PROPERLY CAST, USE 'as' KEYWORD!!!
+//        if let items = defaults.array(forKey: "GetErDoneArray") as? [Item]{
+//                itemArray = items   // If an array exists in the user defaults, set itemArray to that array
+//        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -50,7 +60,7 @@ class GetErDoneViewController: UITableViewController {
         
         // Ternary operator =>
         // value = condition ? valueIfTrue : valueIfFalse
-        cell.accessoryType = itemArray[indexPath.row].done ? .checkmark : .none     // using ternary operator   
+        cell.accessoryType = itemArray[indexPath.row].done ? .checkmark : .none     // using ternary operator
         
         return cell
         
@@ -59,21 +69,13 @@ class GetErDoneViewController: UITableViewController {
     //MARK - Table View Delegates
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        print(itemArray[indexPath.row])    // Prints number of cell selected
+    
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done //Switch to opposite once tapped
         
-
-            itemArray[indexPath.row].done = !itemArray[indexPath.row].done //Switch to opposite once tapped
-       
+        saveItems()
         
         tableView.reloadData()  // Reload the data to update the checkmarks; forces calls to ALL tableView() methods
-        
-        // When cell is selected in app, Add a checkmark if not already there, if it does remove it
-        if (tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark){
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        }else{
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
-    
+
         
         tableView.deselectRow(at: indexPath, animated: true)    //Makes it so that the selected cell doesn't stay gray permanently
         
@@ -101,7 +103,10 @@ class GetErDoneViewController: UITableViewController {
             self.itemArray.append(newItem)       // Add to item array
             
             // Save updated itemArray to our user defaults, then use it to load up table view when we start app again
-            self.defaults.set(self.itemArray, forKey: "GetErDoneArray")
+//            self.defaults.set(self.itemArray, forKey: "GetErDoneArray")
+            
+            
+            self.saveItems()
             
             // ---- IMPORTANT FOR UI
             self.tableView.reloadData() //Updates tableview when new item has been added
@@ -123,56 +128,34 @@ class GetErDoneViewController: UITableViewController {
     }
     
     
+    // Saves data into NSCoder, convert data to plist
+    func saveItems(){
+        
+        //MARK - code to encode item array ================== plist created
+
+        let encoder = PropertyListEncoder()
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }catch{
+            print("Error encoding item array, \(error)")
+        }
+        
+    }
+    
+    // Retrieve the data from plist and covert into useable data for app
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){ 
+            let decoder = PropertyListDecoder()
+            do{
+                itemArray = try decoder.decode([Item].self, from: data)
+            }catch{
+                    print("Error decoding item array, \(error)")
+            }
+        }
+    }
+    
     
 }
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
