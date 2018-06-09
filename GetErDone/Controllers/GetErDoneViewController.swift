@@ -10,7 +10,7 @@ import UIKit
 
 class GetErDoneViewController: UITableViewController {
 
-    var itemArray = ["Wake Up", "Exercise","Shower", "Breakfast", "Chill + Music", "School Work", "Work", "Chillax"]
+    var itemArray = [Item]()
     
     let defaults = UserDefaults.standard  //Create a UserDefaults object, interface to user's default's database, set as standard
     
@@ -22,8 +22,8 @@ class GetErDoneViewController: UITableViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
                                                                 //THIS IS HOW YOU PROPERLY CAST, USE 'as' KEYWORD!!!
-        if let items = defaults.array(forKey: "GetErDoneArray") as? [String]{
-                itemArray = items   // If the array exists in the defaults, set itemArray is the array
+        if let items = defaults.array(forKey: "GetErDoneArray") as? [Item]{
+                itemArray = items   // If an array exists in the user defaults, set itemArray to that array
         }
     }
 
@@ -46,7 +46,11 @@ class GetErDoneViewController: UITableViewController {
         // Create the cell and links with cell identifier in main.storyboard
         let cell = tableView.dequeueReusableCell(withIdentifier: "GetErDoneCell", for: indexPath)
         
-        cell.textLabel?.text = itemArray[indexPath.row]   //Set the text in the cells
+        cell.textLabel?.text = itemArray[indexPath.row].task   //Set the text in the cells
+        
+        // Ternary operator =>
+        // value = condition ? valueIfTrue : valueIfFalse
+        cell.accessoryType = itemArray[indexPath.row].done ? .checkmark : .none     // using ternary operator   
         
         return cell
         
@@ -57,14 +61,17 @@ class GetErDoneViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 //        print(itemArray[indexPath.row])    // Prints number of cell selected
         
+
+            itemArray[indexPath.row].done = !itemArray[indexPath.row].done //Switch to opposite once tapped
+       
+        
+        tableView.reloadData()  // Reload the data to update the checkmarks; forces calls to ALL tableView() methods
         
         // When cell is selected in app, Add a checkmark if not already there, if it does remove it
         if (tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark){
             tableView.cellForRow(at: indexPath)?.accessoryType = .none
-
         }else{
             tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-
         }
     
         
@@ -87,7 +94,11 @@ class GetErDoneViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             // What will happen when user clicks "Add Item" button on our UIAlert
             print(textField.text!)
-            self.itemArray.append(textField.text!)       // Add to item array
+            
+            //Create new item, add the task to it and append it to the itemArray of Item objects
+            let newItem = Item()
+            newItem.task = textField.text!
+            self.itemArray.append(newItem)       // Add to item array
             
             // Save updated itemArray to our user defaults, then use it to load up table view when we start app again
             self.defaults.set(self.itemArray, forKey: "GetErDoneArray")
